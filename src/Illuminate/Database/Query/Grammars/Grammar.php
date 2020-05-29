@@ -4,6 +4,7 @@ namespace Illuminate\Database\Query\Grammars;
 
 use Illuminate\Database\Grammar as BaseGrammar;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -577,6 +578,13 @@ class Grammar extends BaseGrammar
      */
     public function prepareBindingForJsonContains($binding)
     {
+        if ($binding instanceof Expression)
+        {
+            return array_map(function ($value) {
+                return json_encode($value);
+            }, $binding->getBindings());
+        }
+
         return json_encode($binding);
     }
 

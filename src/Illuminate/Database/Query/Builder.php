@@ -707,9 +707,7 @@ class Builder
             'type', 'column', 'operator', 'value', 'boolean'
         );
 
-        if (! $value instanceof Expression) {
-            $this->addBinding($value, 'where');
-        }
+        $this->addBinding($value, 'where');
 
         return $this;
     }
@@ -1347,9 +1345,7 @@ class Builder
     {
         $this->wheres[] = compact('column', 'type', 'boolean', 'operator', 'value');
 
-        if (! $value instanceof Expression) {
-            $this->addBinding($value, 'where');
-        }
+        $this->addBinding($value, 'where');
 
         return $this;
     }
@@ -1553,9 +1549,7 @@ class Builder
 
         $this->wheres[] = compact('type', 'column', 'value', 'boolean', 'not');
 
-        if (! $value instanceof Expression) {
-            $this->addBinding($this->grammar->prepareBindingForJsonContains($value));
-        }
+        $this->addBinding($this->grammar->prepareBindingForJsonContains($value));
 
         return $this;
     }
@@ -1616,9 +1610,7 @@ class Builder
 
         $this->wheres[] = compact('type', 'column', 'operator', 'value', 'boolean');
 
-        if (! $value instanceof Expression) {
-            $this->addBinding($value);
-        }
+        $this->addBinding($value);
 
         return $this;
     }
@@ -1765,9 +1757,7 @@ class Builder
 
         $this->havings[] = compact('type', 'column', 'operator', 'value', 'boolean');
 
-        if (! $value instanceof Expression) {
-            $this->addBinding($value, 'having');
-        }
+        $this->addBinding($value, 'having');
 
         return $this;
     }
@@ -2941,7 +2931,11 @@ class Builder
      */
     public function getBindings()
     {
-        return Arr::flatten($this->bindings);
+        return Arr::flatten(
+            array_map(function($bindings){
+                return $this->cleanBindings($bindings);
+            }, $this->bindings)
+        );
     }
 
     /**
@@ -3019,9 +3013,21 @@ class Builder
      */
     protected function cleanBindings(array $bindings)
     {
-        return array_values(array_filter($bindings, function ($binding) {
-            return ! $binding instanceof Expression;
-        }));
+        $out = [];
+
+        foreach ($bindings as $binding)
+        {
+            if ($binding instanceof Expression)
+            {
+                foreach ($binding->getBindings() as $subBinding)
+                    $out[] = $subBinding;
+            } else
+            {
+                $out[] = $binding;
+            }
+        }
+
+        return $out;
     }
 
     /**

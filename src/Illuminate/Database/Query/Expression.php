@@ -12,14 +12,22 @@ class Expression
     protected $value;
 
     /**
+     * The bindings for this expression
+     *
+     * @var array
+     */
+    protected $bindings;
+
+    /**
      * Create a new raw query expression.
      *
-     * @param  mixed  $value
-     * @return void
+     * @param mixed $value
+     * @param array $bindings
      */
-    public function __construct($value)
+    public function __construct($value, ...$bindings)
     {
         $this->value = $value;
+        $this->bindings = $bindings;
     }
 
     /**
@@ -30,6 +38,14 @@ class Expression
     public function getValue()
     {
         return $this->value;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBindings()
+    {
+        return $this->bindings;
     }
 
     /**
